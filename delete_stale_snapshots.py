@@ -1,4 +1,4 @@
-# This script will search for stale snapshots, where volumes are not attached to any running instances and delete them
+# This script will search and delete stale snapshots, where volumes are not attached to any running instances
 
 import boto3
 
