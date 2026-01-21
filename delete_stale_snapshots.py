@@ -7,14 +7,14 @@ def main():
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html
     ec2=boto3.client('ec2')
     running_instances_response=ec2.describe_instances(Filters=[{'Name':"instance-state-name",'Values': ["running"]}])
-    running_instances=set()
+    running_instances_ids=set()
 
 
     for reservation in running_instances_response["Reservations"]:
         for instance in reservation["Instances"]:
-            running_instances.add(instance["InstanceId"])
+            running_instances_ids.add(instance["InstanceId"])
 
-    print(running_instances)
+    print(running_instances_ids)
 
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2/client/describe_snapshots.html
     snapshots_response = ec2.describe_snapshots(OwnerIds=['self'])
@@ -38,7 +38,7 @@ def main():
 
             attached_instance = attachments[0]["InstanceId"]
 
-            if attached_instance not in running_instances:
+            if attached_instance not in running_instances_ids:
                 print(f"STALE SNAPSHOT (instance stopped): {snapshot_id}")
                 # ec2.delete_snapshot(SnapshotId=snapshot["SnapshotId"])
             else:
