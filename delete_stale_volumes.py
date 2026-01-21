@@ -46,6 +46,7 @@ def main():
                 # We cannot delete it, as it is still attached to instance (even though instance is not running)
                 # We need to first detach it and then delete it
                 # ec2.delete_volume(VolumeId=volume_id)
+                print("Cannot be deleted even though instance is stopped, as it is still attached")
             else:
                 print(f"NOT STALE VOLUME (instance not stopped): {volume_id}")
   
