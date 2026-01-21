@@ -4,6 +4,7 @@ import boto3
 
 # def lambda_handler(event,context):
 def main():
+    # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html
     ec2=boto3.client('ec2')
     running_instances_response=ec2.describe_instances(Filters=[{'Name':"instance-state-name",'Values': ["running"]}])
     running_instances=set()
@@ -15,8 +16,40 @@ def main():
 
     print(running_instances)
 
-    snapshots_response = ec2.describe_snapshots()
-    print(snapshots_response)
+    # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2/client/describe_snapshots.html
+    snapshots_response = ec2.describe_snapshots(OwnerIds=['self'])
+   
+    for snapshot in snapshots_response['Snapshots']:
+        snapshot_id = snapshot['SnapshotId']
+        volume_id = snapshot['VolumeId']
+        print(f"Volume: {volume_id}, Snapshot:{snapshot_id}")
+        try:
+            # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2/client/describe_volumes.html
+            volume_response = ec2.describe_volumes(VolumeIds=[volume_id])
+            volume = volume_response["Volumes"][0]
+
+            attachments = volume.get("Attachments", [])
+
+            if not attachments:
+                print(f"STALE SNAPSHOT (volume detached): {snapshot_id}")
+                # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2/client/delete_snapshot.html
+                # ec2.delete_snapshot(SnapshotId=snapshot["SnapshotId"])
+                continue
+
+            attached_instance = attachments[0]["InstanceId"]
+
+            if attached_instance not in running_instances:
+                print(f"STALE SNAPSHOT (instance stopped): {snapshot_id}")
+                # ec2.delete_snapshot(SnapshotId=snapshot["SnapshotId"])
+            else:
+                print(f"NOT STALE SNAPSHOT (instance not stopped): {snapshot_id}")
+             
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "InvalidVolume.NotFound":
+                print(f"STALE SNAPSHOT (volume deleted): {snapshot_id}")
+                # ec2.delete_snapshot(SnapshotId=snapshot["SnapshotId"])
+            else:
+                raise    
 
 if __name__ == "__main__":
     main()
