@@ -20,6 +20,7 @@ def main():
     snapshots_response = ec2.describe_snapshots(OwnerIds=['self'])
    
     for snapshot in snapshots_response['Snapshots']:
+        print(snapshot)
         snapshot_id = snapshot['SnapshotId']
         volume_id = snapshot['VolumeId']
         print(f"Volume: {volume_id}, Snapshot:{snapshot_id}")
@@ -44,7 +45,7 @@ def main():
             else:
                 print(f"NOT STALE SNAPSHOT (instance not stopped): {snapshot_id}")
              
-        except ClientError as e:
+        except ec2.exceptions.ClientError as e:
             if e.response["Error"]["Code"] == "InvalidVolume.NotFound":
                 print(f"STALE SNAPSHOT (volume deleted): {snapshot_id}")
                 # ec2.delete_snapshot(SnapshotId=snapshot["SnapshotId"])
