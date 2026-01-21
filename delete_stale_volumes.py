@@ -22,7 +22,7 @@ def main():
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2/client/describe_volumes.html
     volumes_response = ec2.describe_volumes()
    
-    for volume in volumes_response['volumes']:
+    for volume in volumes_response['Volumes']:
         # print(volume)
         volume_id = volume['VolumeId']
         print(f"Volume: {volume_id}")
