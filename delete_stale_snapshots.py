@@ -51,7 +51,8 @@ def main():
                 ec2.delete_snapshot(SnapshotId=snapshot["SnapshotId"])
             else:
                 print(f"NOT STALE SNAPSHOT (instance not stopped): {snapshot_id}")
-             
+
+        # Delete the snapshot, if there is no volume found for snapshot     
         except ec2.exceptions.ClientError as e:
             if e.response["Error"]["Code"] == "InvalidVolume.NotFound":
                 print(f"STALE SNAPSHOT (volume deleted): {snapshot_id}")
