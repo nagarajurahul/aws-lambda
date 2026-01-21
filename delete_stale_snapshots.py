@@ -40,7 +40,7 @@ def main():
             if not attachments:
                 print(f"STALE SNAPSHOT (volume is detached from instance): {snapshot_id}")
                 # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2/client/delete_snapshot.html
-                # ec2.delete_snapshot(SnapshotId=snapshot["SnapshotId"])
+                ec2.delete_snapshot(SnapshotId=snapshot["SnapshotId"])
                 continue
 
             attached_instance = attachments[0]["InstanceId"]
@@ -48,14 +48,14 @@ def main():
             # Check if instance is running, if not delete it
             if attached_instance not in running_instances_ids:
                 print(f"STALE SNAPSHOT (instance stopped): {snapshot_id}")
-                # ec2.delete_snapshot(SnapshotId=snapshot["SnapshotId"])
+                ec2.delete_snapshot(SnapshotId=snapshot["SnapshotId"])
             else:
                 print(f"NOT STALE SNAPSHOT (instance not stopped): {snapshot_id}")
              
         except ec2.exceptions.ClientError as e:
             if e.response["Error"]["Code"] == "InvalidVolume.NotFound":
                 print(f"STALE SNAPSHOT (volume deleted): {snapshot_id}")
-                # ec2.delete_snapshot(SnapshotId=snapshot["SnapshotId"])
+                ec2.delete_snapshot(SnapshotId=snapshot["SnapshotId"])
             else:
                 raise    
 
